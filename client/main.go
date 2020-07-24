@@ -1,12 +1,12 @@
 package main
 
 import (
+	"github.com/soyum2222/sharpshooter"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
-	"sharpshooter"
 	"sharpshooterTunnel/client/config"
 )
 
