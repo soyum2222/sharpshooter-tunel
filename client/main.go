@@ -37,6 +37,7 @@ func main() {
 
 			remote_conn, err := sharpshooter.Dial(config.CFG.RemoteAddr)
 			if err != nil {
+				log.Println(err)
 				local_conn.Close()
 				return
 			}
@@ -55,6 +56,10 @@ func main() {
 						local_conn.Close()
 						remote_conn.Close()
 						return
+					}
+
+					if n == 0 {
+						continue
 					}
 
 					data, err := aes.Encrypt(b[:n])
@@ -95,7 +100,7 @@ func main() {
 
 					var length uint32
 
-					binary.BigEndian.PutUint32(head, length)
+					length = binary.BigEndian.Uint32(head)
 
 					data := make([]byte, length)
 

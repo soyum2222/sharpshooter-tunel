@@ -64,6 +64,10 @@ func main() {
 						return
 					}
 
+					if n == 0 {
+						continue
+					}
+
 					data, err := aes.Encrypt(b[:n])
 					if err != nil {
 						log.Println(err)
@@ -102,7 +106,7 @@ func main() {
 
 					var length uint32
 
-					binary.BigEndian.PutUint32(head, length)
+					length = binary.BigEndian.Uint32(head)
 
 					data := make([]byte, length)
 
