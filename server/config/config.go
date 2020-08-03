@@ -11,6 +11,7 @@ var CFG *config
 type config struct {
 	ListenPort int    `json:"listen_port" flag:"listen_port" default:"0" usage:""`
 	LocalAddr  string `json:"local_addr" flag:"local_addr" usage:""`
+	Key        string `json:"key" flag:"key" usage:"" default:"sharpshooter"`
 }
 
 func init() {

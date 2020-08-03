@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/binary"
 	"github.com/soyum2222/sharpshooter"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"sharpshooterTunnel/crypto"
 	"sharpshooterTunnel/server/config"
 )
 
@@ -20,6 +22,11 @@ func main() {
 		Port: config.CFG.ListenPort,
 		Zone: "",
 	})
+
+	aes := crypto.AesCbc{
+		Key:    config.CFG.Key,
+		KenLen: 16,
+	}
 
 	if err != nil {
 		panic(err)
@@ -41,26 +48,90 @@ func main() {
 				return
 			}
 
+			// local to remote
 			go func() {
-				_, err = io.Copy(conn, local_conn)
-				if err != nil {
-					log.Println(err)
+
+				b := make([]byte, 1<<10)
+				head := make([]byte, 4)
+
+				for {
+
+					n, err := local_conn.Read(b)
+					if err != nil {
+						log.Println(err)
+						local_conn.Close()
+						conn.Close()
+						return
+					}
+
+					data, err := aes.Encrypt(b[:n])
+					if err != nil {
+						log.Println(err)
+						local_conn.Close()
+						conn.Close()
+						return
+					}
+
+					binary.BigEndian.PutUint32(head, uint32(len(data)))
+
+					_, err = conn.Write(append(head, data...))
+					if err != nil {
+						log.Println(err)
+						local_conn.Close()
+						conn.Close()
+						return
+					}
+
 				}
 
-				conn.Close()
-				local_conn.Close()
-				return
 			}()
 
+			// remote to local
 			go func() {
-				_, err = io.Copy(local_conn, conn)
-				if err != nil {
-					log.Println(err)
+
+				head := make([]byte, 4)
+				for {
+
+					_, err := io.ReadFull(conn, head)
+					if err != nil {
+						log.Println(err)
+						local_conn.Close()
+						conn.Close()
+						return
+					}
+
+					var length uint32
+
+					binary.BigEndian.PutUint32(head, length)
+
+					data := make([]byte, length)
+
+					_, err = io.ReadFull(conn, data)
+					if err != nil {
+						log.Println(err)
+						local_conn.Close()
+						conn.Close()
+						return
+					}
+
+					realdata, err := aes.Decrypt(data)
+					if err != nil {
+						log.Println(err)
+						local_conn.Close()
+						conn.Close()
+						return
+					}
+
+					_, err = local_conn.Write(realdata)
+					if err != nil {
+						log.Println(err)
+						local_conn.Close()
+						conn.Close()
+						return
+					}
+
 				}
 
-				conn.Close()
-				local_conn.Close()
-				return
 			}()
 
 		}()
