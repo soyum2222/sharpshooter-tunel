@@ -1,4 +1,6 @@
 build:
 	go mod tidy
-	go build -o ./sharpshoot-client ./client/main.go
-	go build -o ./sharpshoot-server ./server/main.go
+	GOOS=linux GOARCH=amd64 go build -o ./sharpshooter-client-linux-amd64 ./client/main.go
+	GOOS=linux GOARCH=amd64 go build -o ./sharpshooter-server-linux-amd64 ./server/main.go
+	GOOS=linux GOARCH=arm   go build -o ./sharpshooter-client-linux-arm ./client/main.go
+	GOOS=linux GOARCH=arm   go build -o ./sharpshooter-server-linux-arm ./server/main.go
