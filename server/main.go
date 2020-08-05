@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"github.com/soyum2222/sharpshooter"
+	"github.com/xtaci/smux"
 	"io"
 	"log"
 	"net"
@@ -32,10 +33,34 @@ func main() {
 		panic(err)
 	}
 
+	rawconn, err := l.Accept()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	serconn, err := smux.Server(rawconn, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	for {
-		conn, err := l.Accept()
+
+		conn, err := serconn.AcceptStream()
 		if err != nil {
 			log.Println(err)
+
+			rawconn, err = l.Accept()
+			if err != nil {
+				log.Println(err)
+			}
+
+			serconn, err = smux.Server(rawconn, nil)
+			if err != nil {
+				log.Println(err)
+			}
+
 			continue
 		}
 
@@ -44,7 +69,7 @@ func main() {
 			local_conn, err := net.Dial("tcp", config.CFG.LocalAddr)
 			if err != nil {
 				log.Println(err)
-				conn.Close()
+
 				return
 			}
 

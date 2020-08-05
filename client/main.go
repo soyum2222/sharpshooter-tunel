@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"github.com/soyum2222/sharpshooter"
+	"github.com/xtaci/smux"
 	"io"
 	"log"
 	"net"
@@ -26,6 +27,19 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	conn, err := sharpshooter.Dial(config.CFG.RemoteAddr)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	remote, err := smux.Client(conn, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	for {
 
 		local_conn, err := l.Accept()
@@ -35,10 +49,21 @@ func main() {
 
 		go func() {
 
-			remote_conn, err := sharpshooter.Dial(config.CFG.RemoteAddr)
+			remote_streem, err := remote.OpenStream()
 			if err != nil {
 				log.Println(err)
 				local_conn.Close()
+
+				conn, err = sharpshooter.Dial(config.CFG.RemoteAddr)
+				if err != nil {
+					log.Println(err)
+				}
+
+				remote, err = smux.Client(conn, nil)
+				if err != nil {
+					log.Println(err)
+				}
+
 				return
 			}
 
@@ -54,7 +79,7 @@ func main() {
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_conn.Close()
+						remote_streem.Close()
 						return
 					}
 
@@ -66,17 +91,17 @@ func main() {
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_conn.Close()
+						remote_streem.Close()
 						return
 					}
 
 					binary.BigEndian.PutUint32(head, uint32(len(data)))
 
-					_, err = remote_conn.Write(append(head, data...))
+					_, err = remote_streem.Write(append(head, data...))
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_conn.Close()
+						remote_streem.Close()
 						return
 					}
 
@@ -90,11 +115,11 @@ func main() {
 
 				for {
 
-					_, err := io.ReadFull(remote_conn, head)
+					_, err := io.ReadFull(remote_streem, head)
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_conn.Close()
+						remote_streem.Close()
 						return
 					}
 
@@ -104,11 +129,11 @@ func main() {
 
 					data := make([]byte, length)
 
-					_, err = io.ReadFull(remote_conn, data)
+					_, err = io.ReadFull(remote_streem, data)
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_conn.Close()
+						remote_streem.Close()
 						return
 					}
 
@@ -116,7 +141,7 @@ func main() {
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_conn.Close()
+						remote_streem.Close()
 						return
 					}
 
@@ -124,7 +149,7 @@ func main() {
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_conn.Close()
+						remote_streem.Close()
 						return
 					}
 				}
