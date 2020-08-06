@@ -13,6 +13,24 @@ import (
 	"sharpshooterTunnel/crypto"
 )
 
+func createConn() (*smux.Session, error) {
+
+	conn, err := sharpshooter.Dial(config.CFG.RemoteAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	remote, err := smux.Client(conn, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return remote, nil
+
+}
+
+var cPool []*smux.Session
+
 func main() {
 
 	go http.ListenAndServe(":9999", nil)
@@ -23,22 +41,23 @@ func main() {
 		KenLen: 16,
 	}
 
+	cPool = make([]*smux.Session, config.CFG.ConNum)
+
+	var err error
+	for i := 0; i < config.CFG.ConNum; i++ {
+
+		cPool[i], err = createConn()
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	l, err := net.Listen("tcp", config.CFG.LocalAddr)
 	if err != nil {
 		panic(err)
 	}
 
-	conn, err := sharpshooter.Dial(config.CFG.RemoteAddr)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	remote, err := smux.Client(conn, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	var i uint32
 
 	for {
 
@@ -47,23 +66,17 @@ func main() {
 			panic(err)
 		}
 
+		i++
+
 		go func() {
 
-			remote_streem, err := remote.OpenStream()
+			remote_streem, err := cPool[i%uint32(config.CFG.ConNum)].OpenStream()
 			if err != nil {
 				log.Println(err)
-				local_conn.Close()
-
-				conn, err = sharpshooter.Dial(config.CFG.RemoteAddr)
+				cPool[i%uint32(config.CFG.ConNum)], err = createConn()
 				if err != nil {
 					log.Println(err)
 				}
-
-				remote, err = smux.Client(conn, nil)
-				if err != nil {
-					log.Println(err)
-				}
-
 				return
 			}
 
