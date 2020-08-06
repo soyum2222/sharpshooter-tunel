@@ -42,6 +42,8 @@ func main() {
 			return
 		}
 
+		rawconn.SetSendWin(512)
+
 		serconn, err := smux.Server(rawconn, nil)
 		if err != nil {
 			log.Println(err)
@@ -54,20 +56,8 @@ func main() {
 
 				conn, err := serconn.AcceptStream()
 				if err != nil {
-
 					log.Println(err)
-
-					rawconn, err = l.Accept()
-					if err != nil {
-						log.Println(err)
-					}
-
-					serconn, err = smux.Server(rawconn, nil)
-					if err != nil {
-						log.Println(err)
-					}
-
-					continue
+					return
 				}
 
 				go func() {

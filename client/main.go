@@ -67,18 +67,17 @@ func main() {
 		}
 
 		i++
-
-		go func() {
-
-			remote_streem, err := cPool[i%uint32(config.CFG.ConNum)].OpenStream()
+		remote_streem, err := cPool[i%uint32(config.CFG.ConNum)].OpenStream()
+		if err != nil {
+			log.Println(err)
+			cPool[i%uint32(config.CFG.ConNum)], err = createConn()
 			if err != nil {
 				log.Println(err)
-				cPool[i%uint32(config.CFG.ConNum)], err = createConn()
-				if err != nil {
-					log.Println(err)
-				}
-				return
 			}
+			return
+		}
+
+		go func() {
 
 			// local to remote
 			go func() {
