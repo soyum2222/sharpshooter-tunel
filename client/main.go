@@ -11,6 +11,7 @@ import (
 	_ "net/http/pprof"
 	"sharpshooterTunnel/client/config"
 	"sharpshooterTunnel/crypto"
+	"time"
 )
 
 func createConn() (*smux.Session, error) {
@@ -43,18 +44,20 @@ func main() {
 
 	cPool = make([]*smux.Session, config.CFG.ConNum)
 
-	var err error
-	for i := 0; i < config.CFG.ConNum; i++ {
-
-		cPool[i], err = createConn()
-		if err != nil {
-			panic(err)
-		}
-	}
-
 	l, err := net.Listen("tcp", config.CFG.LocalAddr)
 	if err != nil {
 		panic(err)
+	}
+
+	for i := 0; i < config.CFG.ConNum; i++ {
+
+	loop:
+		cPool[i], err = createConn()
+		if err != nil {
+			log.Println(err)
+			time.Sleep(time.Second)
+			goto loop
+		}
 	}
 
 	var i uint32
@@ -74,7 +77,7 @@ func main() {
 			if err != nil {
 				log.Println(err)
 			}
-			return
+			continue
 		}
 
 		go func() {
