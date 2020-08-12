@@ -70,13 +70,29 @@ func main() {
 		}
 
 		i++
-		remote_streem, err := cPool[i%uint32(config.CFG.ConNum)].OpenStream()
-		if err != nil {
-			log.Println(err)
-			cPool[i%uint32(config.CFG.ConNum)], err = createConn()
-			if err != nil {
-				log.Println(err)
+
+		var session *smux.Session
+		for {
+			session = cPool[i%uint32(config.CFG.ConNum)]
+			if session != nil {
+				break
 			}
+		}
+
+		remote_streem, err := session.OpenStream()
+		if err != nil {
+
+			cPool[i%uint32(config.CFG.ConNum)] = nil
+
+			go func() {
+			loop:
+				cPool[i%uint32(config.CFG.ConNum)], err = createConn()
+				if err != nil {
+					log.Println(err)
+					goto loop
+				}
+			}()
+
 			continue
 		}
 
