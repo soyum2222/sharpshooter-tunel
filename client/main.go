@@ -77,6 +77,7 @@ func main() {
 			if session != nil {
 				break
 			}
+			i++
 		}
 
 		remote_streem, err := session.OpenStream()
