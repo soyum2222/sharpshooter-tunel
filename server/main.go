@@ -43,6 +43,8 @@ func main() {
 		}
 
 		rawconn.SetSendWin(512)
+		rawconn.SetRecWin(1024)
+		rawconn.SetInterval(150)
 
 		serconn, err := smux.Server(rawconn, nil)
 		if err != nil {
