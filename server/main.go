@@ -7,40 +7,37 @@ import (
 	"io"
 	"log"
 	"net"
-	"net/http"
 	_ "net/http/pprof"
 	"sharpshooterTunnel/crypto"
 	"sharpshooterTunnel/server/config"
+	"strconv"
 )
 
 func main() {
 
-	go http.ListenAndServe(":8888", nil)
+	//go http.ListenAndServe(":8888", nil)
 
 	log.SetFlags(log.Llongfile | log.LstdFlags)
 
-	l, err := sharpshooter.Listen(&net.UDPAddr{
-		IP:   nil,
-		Port: config.CFG.ListenPort,
-		Zone: "",
-	})
+	l, err := sharpshooter.Listen(":" + strconv.Itoa(config.CFG.ListenPort))
+	if err != nil {
+		panic(err)
+	}
 
 	aes := crypto.AesCbc{
 		Key:    config.CFG.Key,
 		KenLen: 16,
 	}
 
-	if err != nil {
-		panic(err)
-	}
-
 	for {
 
-		rawconn, err := l.Accept()
+		conn, err := l.Accept()
 		if err != nil {
 			log.Println(err)
 			return
 		}
+
+		rawconn := conn.(*sharpshooter.Sniper)
 
 		rawconn.SetSendWin(512)
 		rawconn.SetRecWin(1024)
