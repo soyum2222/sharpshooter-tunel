@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 	"github.com/soyum2222/sharpshooter"
 	"github.com/xtaci/smux"
 	"io"
 	"log"
 	"net"
+	"net/http"
 	_ "net/http/pprof"
 	"sharpshooterTunnel/crypto"
 	"sharpshooterTunnel/server/config"
@@ -15,7 +17,9 @@ import (
 
 func main() {
 
-	//go http.ListenAndServe(":8888", nil)
+	if config.CFG.Debug {
+		go func() { fmt.Println(http.ListenAndServe(fmt.Sprintf(":%d", config.CFG.PPort), nil)) }()
+	}
 
 	log.SetFlags(log.Llongfile | log.LstdFlags)
 

@@ -1,0 +1,10 @@
+{
+  "local_addr": "127.0.0.1:1470",
+  "key": "nice",
+  "send_win": 1024,
+  "rec_win": 1024,
+  "interval": 100,
+  "listen_port": 8858,
+  "debug": true,
+  "p_port": 8888
+}

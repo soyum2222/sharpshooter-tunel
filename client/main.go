@@ -11,6 +11,7 @@ import (
 	_ "net/http/pprof"
 	"sharpshooterTunnel/client/config"
 	"sharpshooterTunnel/crypto"
+	"strconv"
 	"time"
 )
 
@@ -40,7 +41,9 @@ var cPool []*smux.Session
 
 func main() {
 
-	go http.ListenAndServe(":9999", nil)
+	if config.CFG.Debug {
+		go func() { _ = http.ListenAndServe(":"+strconv.Itoa(config.CFG.PPort), nil) }()
+	}
 
 	log.SetFlags(log.Llongfile | log.LstdFlags)
 	aes := crypto.AesCbc{
