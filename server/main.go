@@ -43,9 +43,9 @@ func main() {
 
 		rawconn := conn.(*sharpshooter.Sniper)
 
-		rawconn.SetSendWin(512)
-		rawconn.SetRecWin(1024)
-		rawconn.SetInterval(150)
+		rawconn.SetSendWin(int32(config.CFG.SendWin))
+		//rawconn.SetRecWin(1024)
+		rawconn.SetInterval(config.CFG.Interval)
 
 		serconn, err := smux.Server(rawconn, nil)
 		if err != nil {
