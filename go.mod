@@ -8,4 +8,3 @@ require (
 	github.com/xtaci/smux v1.5.14
 )
 
-replace github.com/soyum2222/sharpshooter => ../sharpshooter
