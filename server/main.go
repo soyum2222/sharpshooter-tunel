@@ -47,6 +47,10 @@ func main() {
 		//rawconn.SetRecWin(1024)
 		rawconn.SetInterval(config.CFG.Interval)
 
+		if config.CFG.FEC {
+			rawconn.OpenFec(10, 3)
+		}
+
 		serconn, err := smux.Server(rawconn, nil)
 		if err != nil {
 			log.Println(err)
@@ -108,9 +112,7 @@ func main() {
 								conn.Close()
 								return
 							}
-
 						}
-
 					}()
 
 					// remote to local

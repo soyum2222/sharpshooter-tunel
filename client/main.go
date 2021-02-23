@@ -27,6 +27,10 @@ func createConn() (*smux.Session, error) {
 	sniper.SetSendWin(int32(config.CFG.SendWin))
 	sniper.SetInterval(config.CFG.Interval)
 
+	if config.CFG.FEC {
+		sniper.OpenFec(10, 3)
+	}
+
 	remote, err := smux.Client(conn, nil)
 	if err != nil {
 		return nil, err
