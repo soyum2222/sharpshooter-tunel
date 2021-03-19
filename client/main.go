@@ -31,22 +31,25 @@ func createConn() (*smux.Session, error) {
 		sniper.OpenFec(10, 3)
 	}
 
+	//if config.CFG.Debug {
+	//	sniper.OpenStaFlow()
+	//}
+
+	sharpPool = append(sharpPool, sniper)
+
 	remote, err := smux.Client(conn, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	return remote, nil
-
 }
 
 var cPool []*smux.Session
 
-func main() {
+var sharpPool []*sharpshooter.Sniper
 
-	if config.CFG.Debug {
-		go func() { _ = http.ListenAndServe(":"+strconv.Itoa(config.CFG.PPort), nil) }()
-	}
+func main() {
 
 	log.SetFlags(log.Llongfile | log.LstdFlags)
 	aes := crypto.AesCbc{
@@ -70,6 +73,33 @@ func main() {
 			time.Sleep(time.Second)
 			goto loop
 		}
+	}
+
+	if config.CFG.Debug {
+		http.HandleFunc("/statistics", func(writer http.ResponseWriter, request *http.Request) {
+			//
+			//var total int64
+			//var effective int64
+			//for _, sniper := range sharpPool {
+			//	t, e := sniper.FlowStatistics()
+			//	total += t
+			//	effective += e
+			//}
+			//
+			//resp := struct {
+			//	Total     int64 `json:"total"`
+			//	Effective int64 `json:"effective"`
+			//}{}
+			//
+			//resp.Total = total
+			//resp.Effective = effective
+			//
+			//data, _ := json.Marshal(resp)
+			//
+			//_, _ = writer.Write(data)
+		})
+
+		go func() { _ = http.ListenAndServe(":"+strconv.Itoa(config.CFG.PPort), nil) }()
 	}
 
 	var i uint32
