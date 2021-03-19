@@ -58,6 +58,10 @@ func main() {
 		}
 
 		go func() {
+			defer func() {
+				_ = conn.Close()
+				_ = serconn.Close()
+			}()
 
 			for {
 
