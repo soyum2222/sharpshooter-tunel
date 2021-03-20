@@ -12,6 +12,7 @@ type config struct {
 	Key        string `json:"key" flag:"key" usage:"" default:"sharpshooter"`
 	Interval   int64  `json:"interval" flag:"interval" default:"100" usage:""`
 	SendWin    int    `json:"send_win" flag:"send_win" default:"1024" usage:""`
+	MTU        int    `json:"mtu" flag:"mut" default:"512" usage:""`
 	RecWin     int    `json:"rec_win" flag:"rec_win" default:"1024" usage:""`
 	ListenPort int    `json:"listen_port" flag:"listen_port" default:"0" usage:""`
 	PPort      int    `json:"p_port" flag:"p_port" default:"8888" usage:""`

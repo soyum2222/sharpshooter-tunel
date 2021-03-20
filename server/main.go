@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"github.com/soyum2222/sharpshooter"
 	"github.com/xtaci/smux"
@@ -13,11 +14,27 @@ import (
 	"sharpshooterTunnel/crypto"
 	"sharpshooterTunnel/server/config"
 	"strconv"
+	"sync"
 )
+
+var currentPool sync.Map
 
 func main() {
 
 	if config.CFG.Debug {
+
+		http.HandleFunc("/statistics", func(writer http.ResponseWriter, request *http.Request) {
+
+			sta := map[string]sharpshooter.Statistics{}
+			currentPool.Range(func(key, value interface{}) bool {
+				sta[value.(*sharpshooter.Sniper).RemoteAddr().String()] = value.(*sharpshooter.Sniper).TrafficStatistics()
+				return true
+			})
+
+			data, _ := json.Marshal(sta)
+			_, _ = writer.Write(data)
+		})
+
 		go func() { fmt.Println(http.ListenAndServe(fmt.Sprintf(":%d", config.CFG.PPort), nil)) }()
 	}
 
@@ -44,8 +61,16 @@ func main() {
 		rawconn := conn.(*sharpshooter.Sniper)
 
 		rawconn.SetSendWin(int32(config.CFG.SendWin))
-		//rawconn.SetRecWin(1024)
+
 		rawconn.SetInterval(config.CFG.Interval)
+
+		rawconn.SetPackageSize(int64(config.CFG.MTU))
+
+		currentPool.Store(conn.RemoteAddr(), rawconn)
+
+		if config.CFG.Debug {
+			rawconn.OpenStaTraffic()
+		}
 
 		if config.CFG.FEC {
 			rawconn.OpenFec(10, 3)
@@ -59,6 +84,7 @@ func main() {
 
 		go func() {
 			defer func() {
+				currentPool.Delete(conn.RemoteAddr())
 				_ = conn.Close()
 				_ = serconn.Close()
 			}()

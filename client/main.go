@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"github.com/soyum2222/sharpshooter"
 	"github.com/xtaci/smux"
 	"io"
@@ -25,15 +26,18 @@ func createConn() (*smux.Session, error) {
 	sniper := conn.(*sharpshooter.Sniper)
 
 	sniper.SetSendWin(int32(config.CFG.SendWin))
+
 	sniper.SetInterval(config.CFG.Interval)
+
+	sniper.SetPackageSize(int64(config.CFG.MTU))
 
 	if config.CFG.FEC {
 		sniper.OpenFec(10, 3)
 	}
 
-	//if config.CFG.Debug {
-	//	sniper.OpenStaFlow()
-	//}
+	if config.CFG.Debug {
+		sniper.OpenStaTraffic()
+	}
 
 	sharpPool = append(sharpPool, sniper)
 
@@ -77,26 +81,16 @@ func main() {
 
 	if config.CFG.Debug {
 		http.HandleFunc("/statistics", func(writer http.ResponseWriter, request *http.Request) {
-			//
-			//var total int64
-			//var effective int64
-			//for _, sniper := range sharpPool {
-			//	t, e := sniper.FlowStatistics()
-			//	total += t
-			//	effective += e
-			//}
-			//
-			//resp := struct {
-			//	Total     int64 `json:"total"`
-			//	Effective int64 `json:"effective"`
-			//}{}
-			//
-			//resp.Total = total
-			//resp.Effective = effective
-			//
-			//data, _ := json.Marshal(resp)
-			//
-			//_, _ = writer.Write(data)
+
+			sta := map[string]sharpshooter.Statistics{}
+			for _, sniper := range sharpPool {
+				s := sniper.TrafficStatistics()
+				sta[sniper.LocalAddr().String()] = s
+			}
+
+			data, _ := json.Marshal(sta)
+
+			_, _ = writer.Write(data)
 		})
 
 		go func() { _ = http.ListenAndServe(":"+strconv.Itoa(config.CFG.PPort), nil) }()
