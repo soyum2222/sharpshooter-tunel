@@ -9,3 +9,7 @@ win:
 	go mod tidy
 	GOOS=windows GOARCH=amd64 go build -gcflags 'all=-trimpath=$(GOPATH)' -asmflags 'all=-trimpath=$(GOPATH)' -o ./sharpshooter-client-win-amd64.exe ./client/main.go
 	GOOS=windows GOARCH=amd64 go build -gcflags 'all=-trimpath=$(GOPATH)' -asmflags 'all=-trimpath=$(GOPATH)' -o ./sharpshooter-server-win-amd64.exe ./server/main.go
+
+mac:
+	go mod tidy
+	GOOS=darwin GOARCH=amd64 go build -gcflags 'all=-trimpath=$(GOPATH)' -asmflags 'all=-trimpath=$(GOPATH)' -o ./sharpshooter-client-darwin-amd64 ./client/main.go
