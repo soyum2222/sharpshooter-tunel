@@ -116,6 +116,7 @@ func main() {
 			i++
 		}
 
+	loop2:
 		remote_streem, err := session.OpenStream()
 		if err != nil {
 			index := i % uint32(config.CFG.ConNum)
@@ -125,6 +126,7 @@ func main() {
 				local_conn.Close()
 				continue
 			}
+			goto loop2
 		}
 
 		go func() {
