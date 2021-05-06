@@ -118,19 +118,13 @@ func main() {
 
 		remote_streem, err := session.OpenStream()
 		if err != nil {
-
-			cPool[i%uint32(config.CFG.ConNum)] = nil
-
-			go func() {
-			loop:
-				cPool[i%uint32(config.CFG.ConNum)], err = createConn()
-				if err != nil {
-					log.Println(err)
-					goto loop
-				}
-			}()
-
-			continue
+			index := i % uint32(config.CFG.ConNum)
+			cPool[index], err = createConn()
+			if err != nil {
+				log.Println(err)
+				local_conn.Close()
+				continue
+			}
 		}
 
 		go func() {
