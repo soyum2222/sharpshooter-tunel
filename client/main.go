@@ -12,6 +12,7 @@ import (
 	_ "net/http/pprof"
 	"sharpshooterTunnel/client/config"
 	"sharpshooterTunnel/crypto"
+	"sharpshooterTunnel/prof"
 	"strconv"
 	"time"
 )
@@ -94,6 +95,7 @@ func main() {
 		})
 
 		go func() { _ = http.ListenAndServe(":"+strconv.Itoa(config.CFG.PPort), nil) }()
+		prof.Monitor(time.Second * 30)
 	}
 
 	var i uint32

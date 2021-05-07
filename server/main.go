@@ -12,9 +12,11 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"sharpshooterTunnel/crypto"
+	"sharpshooterTunnel/prof"
 	"sharpshooterTunnel/server/config"
 	"strconv"
 	"sync"
+	"time"
 )
 
 var currentPool sync.Map
@@ -22,7 +24,6 @@ var currentPool sync.Map
 func main() {
 
 	if config.CFG.Debug {
-
 		http.HandleFunc("/statistics", func(writer http.ResponseWriter, request *http.Request) {
 
 			sta := map[string]sharpshooter.Statistics{}
@@ -36,6 +37,7 @@ func main() {
 		})
 
 		go func() { fmt.Println(http.ListenAndServe(fmt.Sprintf(":%d", config.CFG.PPort), nil)) }()
+		prof.Monitor(time.Second * 30)
 	}
 
 	log.SetFlags(log.Llongfile | log.LstdFlags)
