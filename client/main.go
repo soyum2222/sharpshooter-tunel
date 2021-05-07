@@ -109,6 +109,7 @@ func main() {
 
 		i++
 
+	loop2:
 		var session *smux.Session
 		for {
 			session = cPool[i%uint32(config.CFG.ConNum)]
@@ -118,7 +119,6 @@ func main() {
 			i++
 		}
 
-	loop2:
 		remote_streem, err := session.OpenStream()
 		if err != nil {
 			index := i % uint32(config.CFG.ConNum)
@@ -128,6 +128,7 @@ func main() {
 				local_conn.Close()
 				continue
 			}
+			i++
 			goto loop2
 		}
 
