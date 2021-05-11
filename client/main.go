@@ -111,16 +111,14 @@ func main() {
 
 	loop2:
 		var session *smux.Session
-		for {
-			session = cPool[i%uint32(config.CFG.ConNum)]
-			if session != nil {
-				break
-			}
-			i++
+		session = cPool[i%uint32(config.CFG.ConNum)]
+
+		var remoteStream *smux.Stream
+		if session != nil {
+			remoteStream, err = session.OpenStream()
 		}
 
-		remote_streem, err := session.OpenStream()
-		if err != nil {
+		if err != nil || session == nil {
 			index := i % uint32(config.CFG.ConNum)
 			cPool[index], err = createConn()
 			if err != nil {
@@ -128,7 +126,6 @@ func main() {
 				local_conn.Close()
 				continue
 			}
-			i++
 			goto loop2
 		}
 
@@ -146,7 +143,7 @@ func main() {
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_streem.Close()
+						remoteStream.Close()
 						return
 					}
 
@@ -158,17 +155,17 @@ func main() {
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_streem.Close()
+						remoteStream.Close()
 						return
 					}
 
 					binary.BigEndian.PutUint32(head, uint32(len(data)))
 
-					_, err = remote_streem.Write(append(head, data...))
+					_, err = remoteStream.Write(append(head, data...))
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_streem.Close()
+						remoteStream.Close()
 						return
 					}
 
@@ -182,11 +179,11 @@ func main() {
 
 				for {
 
-					_, err := io.ReadFull(remote_streem, head)
+					_, err := io.ReadFull(remoteStream, head)
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_streem.Close()
+						remoteStream.Close()
 						return
 					}
 
@@ -196,11 +193,11 @@ func main() {
 
 					data := make([]byte, length)
 
-					_, err = io.ReadFull(remote_streem, data)
+					_, err = io.ReadFull(remoteStream, data)
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_streem.Close()
+						remoteStream.Close()
 						return
 					}
 
@@ -208,7 +205,7 @@ func main() {
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_streem.Close()
+						remoteStream.Close()
 						return
 					}
 
@@ -216,7 +213,7 @@ func main() {
 					if err != nil {
 						log.Println(err)
 						local_conn.Close()
-						remote_streem.Close()
+						remoteStream.Close()
 						return
 					}
 				}

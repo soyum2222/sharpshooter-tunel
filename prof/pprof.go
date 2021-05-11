@@ -35,8 +35,9 @@ func CPU() error {
 		return err
 	}
 
-	defer pprof.StopCPUProfile()
 	time.Sleep(time.Second * 30)
+	pprof.StopCPUProfile()
+
 	return nil
 }
 
