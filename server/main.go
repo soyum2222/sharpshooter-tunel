@@ -164,6 +164,9 @@ func main() {
 							var length uint32
 
 							length = binary.BigEndian.Uint32(head)
+							if length > 1<<10 {
+								continue
+							}
 
 							data := make([]byte, length)
 
