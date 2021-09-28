@@ -30,9 +30,10 @@ func AutoParse(c interface{}) {
 			ontology := c_value.Elem().Field(i).Addr().Interface().(*int)
 			fd_int, err := strconv.Atoi(fd)
 			if err != nil {
-				panic(err)
+				flag.IntVar(ontology, fg, 0, fu)
+			} else {
+				flag.IntVar(ontology, fg, fd_int, fu)
 			}
-			flag.IntVar(ontology, fg, fd_int, fu)
 		case reflect.Int64:
 			ontology := c_value.Elem().Field(i).Addr().Interface().(*int64)
 			fd_int, err := strconv.Atoi(fd)
