@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"runtime/debug"
 	"sharpshooterTunnel/crypto"
 	"sharpshooterTunnel/prof"
 	"sharpshooterTunnel/server/config"
@@ -22,6 +23,15 @@ import (
 var currentPool sync.Map
 
 func main() {
+
+	defer func() {
+		err := recover()
+		if err != nil {
+			stack := debug.Stack()
+			fmt.Println(string(stack))
+			fmt.Println(err)
+		}
+	}()
 
 	if config.CFG.Debug {
 		http.HandleFunc("/statistics", func(writer http.ResponseWriter, request *http.Request) {

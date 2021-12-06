@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"github.com/soyum2222/sharpshooter"
 	"github.com/xtaci/smux"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"runtime/debug"
 	"sharpshooterTunnel/client/config"
 	"sharpshooterTunnel/crypto"
 	"sharpshooterTunnel/prof"
@@ -55,6 +57,15 @@ var cPool []*smux.Session
 var sharpPool []*sharpshooter.Sniper
 
 func main() {
+
+	defer func() {
+		err := recover()
+		if err != nil {
+			stack := debug.Stack()
+			fmt.Println(string(stack))
+			fmt.Println(err)
+		}
+	}()
 
 	log.SetFlags(log.Llongfile | log.LstdFlags)
 	aes := crypto.AesCbc{
