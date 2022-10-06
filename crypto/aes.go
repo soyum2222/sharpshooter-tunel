@@ -2,9 +2,11 @@ package crypto
 
 import (
 	"bytes"
+	"compress/zlib"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
+	"io"
 )
 
 type AesCbc struct {
@@ -14,10 +16,37 @@ type AesCbc struct {
 
 func (a *AesCbc) Encrypt(src []byte) ([]byte, error) {
 	key := evpBytesToKey(a.Key, a.KenLen)
-	return encryptAES(src, key)
+	b, err := encryptAES(src, key)
+	if err != nil {
+		return nil, err
+	}
+
+	var buf bytes.Buffer
+	w := zlib.NewWriter(&buf)
+	_, err = w.Write(b)
+	if err != nil {
+		return nil, err
+	}
+	w.Close()
+
+	return buf.Bytes(), nil
 }
 
 func (a *AesCbc) Decrypt(src []byte) ([]byte, error) {
+
+	b := bytes.NewReader(src)
+
+	r, err := zlib.NewReader(b)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Close()
+	src, err = io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
 	key := evpBytesToKey(a.Key, a.KenLen)
 	return decryptAES(src, key)
 }
