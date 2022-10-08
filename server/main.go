@@ -57,11 +57,6 @@ func main() {
 		panic(err)
 	}
 
-	aes := crypto.AesCbc{
-		Key:    config.CFG.Key,
-		KenLen: 16,
-	}
-
 	for {
 
 		conn, err := l.Accept()
@@ -123,8 +118,12 @@ func main() {
 						b := make([]byte, 1<<10)
 						head := make([]byte, 4)
 
-						for {
+						aes := crypto.AesCbc{
+							Key:    config.CFG.Key,
+							KenLen: 16,
+						}
 
+						for {
 							n, err := local_conn.Read(b)
 							if err != nil {
 								log.Println(err)
@@ -161,8 +160,13 @@ func main() {
 					go func() {
 
 						head := make([]byte, 4)
-						for {
 
+						aes := crypto.AesCbc{
+							Key:    config.CFG.Key,
+							KenLen: 16,
+						}
+
+						for {
 							_, err := io.ReadFull(conn, head)
 							if err != nil {
 								log.Println(err)

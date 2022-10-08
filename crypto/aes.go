@@ -10,8 +10,12 @@ import (
 )
 
 type AesCbc struct {
-	Key    string
-	KenLen int
+	Key              string
+	KenLen           int
+	compressBuf      bytes.Buffer
+	compressReader   io.ReadCloser
+	uncompressReader *bytes.Reader
+	compressWriter   *zlib.Writer
 }
 
 func (a *AesCbc) Encrypt(src []byte) ([]byte, error) {
@@ -21,28 +25,47 @@ func (a *AesCbc) Encrypt(src []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	var buf bytes.Buffer
-	w := zlib.NewWriter(&buf)
-	_, err = w.Write(b)
+	if a.compressWriter == nil {
+		a.compressWriter, _ = zlib.NewWriterLevel(&a.compressBuf, zlib.BestCompression)
+	} else {
+		a.compressWriter.Reset(&a.compressBuf)
+	}
+
+	_, err = a.compressWriter.Write(b)
 	if err != nil {
+		_ = a.compressWriter.Close()
 		return nil, err
 	}
-	w.Close()
 
-	return buf.Bytes(), nil
+	_ = a.compressWriter.Close()
+
+	data := a.compressBuf.Bytes()
+	a.compressBuf.Reset()
+
+	return data, nil
 }
 
 func (a *AesCbc) Decrypt(src []byte) ([]byte, error) {
 
-	b := bytes.NewReader(src)
-
-	r, err := zlib.NewReader(b)
-	if err != nil {
-		return nil, err
+	var err error
+	if a.uncompressReader == nil {
+		a.uncompressReader = bytes.NewReader(src)
+	} else {
+		a.uncompressReader.Reset(src)
 	}
 
-	r.Close()
-	src, err = io.ReadAll(r)
+	if a.compressReader == nil {
+		a.compressReader, err = zlib.NewReader(a.uncompressReader)
+		if err != nil {
+			_ = a.compressReader.Close()
+			return nil, err
+		}
+	} else {
+		a.compressReader.(zlib.Resetter).Reset(a.uncompressReader, nil)
+	}
+
+	_ = a.compressReader.Close()
+	src, err = io.ReadAll(a.compressReader)
 	if err != nil {
 		return nil, err
 	}

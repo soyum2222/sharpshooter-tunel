@@ -68,10 +68,6 @@ func main() {
 	}()
 
 	log.SetFlags(log.Llongfile | log.LstdFlags)
-	aes := crypto.AesCbc{
-		Key:    config.CFG.Key,
-		KenLen: 16,
-	}
 
 	cPool = make([]*smux.Session, config.CFG.ConNum)
 
@@ -145,6 +141,11 @@ func main() {
 			// local to remote
 			go func() {
 
+				aes := crypto.AesCbc{
+					Key:    config.CFG.Key,
+					KenLen: 16,
+				}
+
 				b := make([]byte, 1<<10)
 				head := make([]byte, 4)
 
@@ -187,6 +188,11 @@ func main() {
 			// remote to local
 			go func() {
 				head := make([]byte, 4)
+
+				aes := crypto.AesCbc{
+					Key:    config.CFG.Key,
+					KenLen: 16,
+				}
 
 				for {
 
