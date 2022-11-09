@@ -13,6 +13,7 @@ import (
 	_ "net/http/pprof"
 	"runtime/debug"
 	"sharpshooterTunnel/client/config"
+	"sharpshooterTunnel/common"
 	"sharpshooterTunnel/crypto"
 	"sharpshooterTunnel/prof"
 	"strconv"
@@ -57,6 +58,8 @@ var cPool []*smux.Session
 var sharpPool []*sharpshooter.Sniper
 
 func main() {
+
+	common.Dup()
 
 	defer func() {
 		err := recover()
