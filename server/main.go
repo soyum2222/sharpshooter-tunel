@@ -12,6 +12,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"runtime/debug"
+	"sharpshooterTunnel/common"
 	"sharpshooterTunnel/crypto"
 	"sharpshooterTunnel/prof"
 	"sharpshooterTunnel/server/config"
@@ -23,6 +24,8 @@ import (
 var currentPool sync.Map
 
 func main() {
+
+	common.Dup()
 
 	defer func() {
 		err := recover()
