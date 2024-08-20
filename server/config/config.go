@@ -18,6 +18,7 @@ type config struct {
 	PPort      int    `json:"p_port" flag:"p_port" default:"8888" usage:""`
 	Debug      bool   `json:"debug" flag:"debug" default:"false" usage:""`
 	FEC        bool   `json:"fec" flag:"fec" default:"false" usage:""`
+	SDebug     bool   `json:"sdebug" flag:"sdebug" default:"false" usage:""`
 }
 
 func init() {

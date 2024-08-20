@@ -73,6 +73,10 @@ func main() {
 
 		rawconn.SetPackageSize(int64(config.CFG.MTU))
 
+		if config.CFG.SDebug {
+			rawconn.Debug()
+		}
+
 		currentPool.Store(conn.RemoteAddr(), rawconn)
 
 		if config.CFG.Debug {
