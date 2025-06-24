@@ -13,3 +13,4 @@ win:
 mac:
 	go mod tidy
 	GOOS=darwin GOARCH=amd64 go build -gcflags 'all=-trimpath=$(GOPATH)' -asmflags 'all=-trimpath=$(GOPATH)' -o ./sharpshooter-client-darwin-amd64 ./client/main.go
+    GOOS=darwin GOARCH=arm64 go build -gcflags 'all=-trimpath=$(GOPATH)' -asmflags 'all=-trimpath=$(GOPATH)' -o ./sharpshooter-client-darwin-arm64 ./client/main.go
